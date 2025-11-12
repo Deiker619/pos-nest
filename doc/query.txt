@@ -1,0 +1,24 @@
+SELECT 
+  p.id AS id_pago,
+  p.txnid,
+  p.tipo,
+  p.serial,
+  p.descripcion,
+  h.nombre_comercial,
+  p.coin,
+  p.monto,
+  p.tasa_bs_usd,
+  p.monto_recibido,
+  p.coin_recibido,
+  p.usuario_receptor,
+  p.ref_bank,
+  h.banco,
+  p.montofiat,
+  p.comision_binancepay,
+  h.telefono,
+  p.fecha
+FROM sch_crypto_pago.api_binance_pagos p
+LEFT JOIN public.crixto_punto_homologacion h 
+  ON p.serial = h.serial
+WHERE p.descripcion LIKE 'PUNTO DE VENTA%'
+ORDER BY p.id DESC;
