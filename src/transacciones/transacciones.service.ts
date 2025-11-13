@@ -14,10 +14,12 @@ export class TransaccionesService {
    * Metodo principal, el que orquesta todos los tipos de transacciones
    */
   async findAll(query) {
+    console.log('gpa')
     return await this.getTransaccionesAll(query);
   }
 
   async getTransaccionesAll(query: any = {}) {
+    console.log(query)
     const {
       limit = 50,
       page = 1,
@@ -70,6 +72,7 @@ export class TransaccionesService {
 
     // 🔹 Filtro de búsqueda
     if (busqueda && busqueda.trim() !== '') {
+      console.log(busqueda)
       const likeValue = `%${busqueda}%`;
       qb.andWhere(
         `(
@@ -79,6 +82,7 @@ export class TransaccionesService {
         p.descripcion ILIKE :likeValue OR
         p.usuario_receptor ILIKE :likeValue OR
         p.ref_bank ILIKE :likeValue OR
+        p.tipo ILIKE :likeValue OR
         punto.nombre_comercial ILIKE :likeValue OR
         punto.banco ILIKE :likeValue
       )`,
