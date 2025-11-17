@@ -20,7 +20,7 @@ import { ConfigModule } from '@nestjs/config';
       database: process.env.DB_NAME,
       autoLoadEntities: true,
       synchronize: false, 
-      logging: true,
+      logging: false,
     }),
   ],
   controllers: [AppController],

@@ -6,6 +6,7 @@ import { ApiBinancePagos } from './entities/apiBinancePos.entity';
 import { ApiPosLogger } from './entities/apiPosLogger.entity';
 import { CrixtoPuntoHomologacion } from './entities/crixtoPuntoHomologacion.entity';
 import { PosConfiguration } from './entities/posConfiguration.entity';
+import { KpisService } from './kpis/kpis.service';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { PosConfiguration } from './entities/posConfiguration.entity';
     TypeOrmModule.forFeature([PosConfiguration]),
   ],
   controllers: [TransaccionesController],
-  providers: [TransaccionesService],
+  providers: [TransaccionesService, KpisService],
 })
 export class TransaccionesModule {}
