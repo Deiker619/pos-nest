@@ -9,10 +9,9 @@ export class TransaccionesController {
     private readonly transaccionesKpis: KpisService,
   ) {}
 
-
-  /* 
-    * TRANSACCIONES De LOS PUNTOS
-  */
+  /*
+   * TRANSACCIONES De LOS PUNTOS
+   */
   @Get()
   findAll(@Query() query) {
     return this.transaccionesService.findAll(query);
@@ -23,8 +22,7 @@ export class TransaccionesController {
    */
   @Get('/kpis')
   async countRemesa(@Query() query) {
-
-    console.log('kpis', query.type)
+    console.log('kpis', query.type);
     if (query.type == 'pago_movil')
       return this.transaccionesKpis.getKpisPagoMovil(query);
     if (query.type == 'diferido')

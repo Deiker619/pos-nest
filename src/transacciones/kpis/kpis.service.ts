@@ -10,6 +10,7 @@ export class KpisService {
     private readonly apiBinancePagoRepo: Repository<ApiBinancePagos>,
   ) {}
   getKpisPagoMovil = async (query: any = {}) => {
+    const { summarType = 'general', fecha_inicio, fecha_fin } = query;
     const qb = this.apiBinancePagoRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.punto', 'punto') // mantiene la relación viva
@@ -21,6 +22,8 @@ export class KpisService {
         'p.descripcion',
         'p.coin',
         'p.monto',
+        'p.monto_pago',
+        'p.comision',
         'p.tasa_bs_usd',
         'p.monto_recibido',
         'p.coin_recibido',
@@ -36,11 +39,19 @@ export class KpisService {
       .where('p.descripcion LIKE :desc', { desc: 'PUNTO DE VENTA%' })
       .andWhere('punto.monedaRecibir = :moneda', { moneda: 'Bs' });
 
+    if (fecha_inicio && fecha_fin) {
+      console.log('filtrando');
+      const inicio = new Date(`${fecha_inicio}:00Z`);
+      const fin = new Date(`${fecha_fin}:00Z`);
+      qb.andWhere('p.fecha BETWEEN :inicio AND :fin', { inicio, fin });
+    }
+
     const [data, total] = await qb.getManyAndCount();
 
-    return this.getSummary('general', data);
+    return this.getSummary(summarType, data);
   };
   getKpisPagoDiferido = async (query: any = {}) => {
+    const { summarType = 'general', fecha_inicio, fecha_fin } = query;
     const qb = this.apiBinancePagoRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.punto', 'punto') // mantiene la relación viva
@@ -52,6 +63,8 @@ export class KpisService {
         'p.descripcion',
         'p.coin',
         'p.monto',
+        'p.monto_pago',
+        'p.comision',
         'p.tasa_bs_usd',
         'p.monto_recibido',
         'p.coin_recibido',
@@ -67,9 +80,16 @@ export class KpisService {
       .where('p.descripcion LIKE :desc', { desc: 'PUNTO DE VENTA%' })
       .andWhere('punto.monedaRecibir = :moneda', { moneda: 'USDT' });
 
+    if (fecha_inicio && fecha_fin) {
+      console.log('filtrando');
+      const inicio = new Date(`${fecha_inicio}:00Z`);
+      const fin = new Date(`${fecha_fin}:00Z`);
+      qb.andWhere('p.fecha BETWEEN :inicio AND :fin', { inicio, fin });
+    }
+
     const [data, total] = await qb.getManyAndCount();
 
-    return this.getSummary('general', data);
+    return this.getSummary(summarType, data);
   };
 
   getSummary = async (
@@ -92,6 +112,7 @@ export class KpisService {
   };
 
   getSummaryBySerial = (data: any[]) => {
+    console.log('serial');
     return data.reduce((acc, item) => {
       const serialPunto = item?.serial || 'Sin Serial';
       const nombrePunto = item.punto?.nombreComercial || 'Sin nombre';
@@ -107,7 +128,7 @@ export class KpisService {
       }
 
       acc[serialPunto].totalTransacciones += 1;
-      acc[serialPunto].totalMonto += Number(item.monto) || 0;
+      acc[serialPunto].totalMonto += Number(item.monto_pago) || 0;
       acc[serialPunto].totalMontoRecibido += Number(item.monto_recibido) || 0;
       acc[serialPunto].totalFiat += Number(item.montofiat) || 0;
 
@@ -130,7 +151,7 @@ export class KpisService {
       }
 
       acc[nombrePunto].totalTransacciones += 1;
-      acc[nombrePunto].totalMonto += Number(item.monto) || 0;
+      acc[nombrePunto].totalMonto += Number(item.monto_pago) || 0;
       acc[nombrePunto].totalMontoRecibido += Number(item.monto_recibido) || 0;
       acc[nombrePunto].totalFiat += Number(item.montofiat) || 0;
 
@@ -146,11 +167,11 @@ export class KpisService {
 
         // Totales generales
         acc.totalTransacciones += 1;
-        acc.binanceComision += Number(item.comision_binancepay) || 0
-        acc.totalMonto += Number(item.monto) || 0;
+        acc.binanceComision += Number(item.comision_binancepay) || 0;
+        acc.totalMonto += Number(item.monto_pago) || 0;
         acc.totalMontoRecibido += Number(item.monto_recibido) || 0;
         acc.totalFiat += Number(item.montofiat) || 0;
-
+        acc.comision += Number(item.comision) || 0;
         // Seriales únicos
         acc._seriales.add(serial);
 
@@ -168,6 +189,7 @@ export class KpisService {
         binanceComision: 0,
         totalMontoRecibido: 0,
         totalFiat: 0,
+        comision: 0,
         _seriales: new Set<string>(),
 
         totalTasa: 0, // suma de las tasas válidas
@@ -181,6 +203,7 @@ export class KpisService {
       totalMontoRecibido: summary.totalMontoRecibido,
       totalFiat: summary.totalFiat,
       binanceComision: summary.binanceComision,
+      comision: summary.comision,
       totalPuntosTransacciones: summary._seriales.size,
 
       tasaPromedio:
