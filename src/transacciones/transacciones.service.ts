@@ -64,7 +64,7 @@ export class TransaccionesService {
       ])
       .where('p.descripcion LIKE :desc', { desc: 'PUNTO DE VENTA%' })
       .andWhere('punto.monedaRecibir = :moneda', { moneda: 'Bs' })
-      .orderBy('p.id', 'ASC')
+      .orderBy('p.id', 'DESC')
       .take(limit)
       .skip(skip)
       .cache(
@@ -153,7 +153,7 @@ export class TransaccionesService {
       ])
       .where('p.descripcion LIKE :desc', { desc: 'PUNTO DE VENTA%' })
       .andWhere('punto.monedaRecibir = :moneda', { moneda: 'USDT' })
-      .orderBy('p.id', 'ASC')
+      .orderBy('p.id', 'DESC')
       .take(limit)
       .skip(skip)
       .cache(
@@ -169,9 +169,9 @@ export class TransaccionesService {
     }
 
     // 🔹 Filtro de búsqueda
-    if (busqueda && busqueda.trim() !== '') {
+    if (busqueda) {
       console.log(busqueda);
-      const likeValue = `%${busqueda}%`;
+      const likeValue = `%${busqueda.trim()}%`;
       qb.andWhere(
         `(
         CAST(p.id AS TEXT) ILIKE :likeValue OR
