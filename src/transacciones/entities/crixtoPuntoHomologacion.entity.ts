@@ -7,6 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { ApiBinancePagos } from './apiBinancePos.entity';
+import { ModeloTransformer } from 'src/transformers/modelo.transformer';
 
 @Entity({ schema: 'public', name: 'crixto_punto_homologacion' })
 export class CrixtoPuntoHomologacion {
@@ -26,10 +27,10 @@ export class CrixtoPuntoHomologacion {
   })
   nombreComercial: string;
 
-  @Column({ type: 'int', nullable: true, default: 1 })
+  @Column({ type: 'int', nullable: true, default: 1,  transformer: ModeloTransformer })
   modelo: number;
 
-  @Column({ type: 'varchar', length: 15, nullable: true })
+  @Column({ type: 'varchar', length: 15, nullable: true})
   cedula: string;
 
   @Column({ name: 'cod_banco', type: 'varchar', length: 10, nullable: true })

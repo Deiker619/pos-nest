@@ -28,4 +28,12 @@ export class TransaccionesController {
     if (query.type == 'diferido')
       return this.transaccionesKpis.getKpisPagoDiferido(query);
   }
+
+  /*
+   * ULTIMA TRANSACCION
+   */
+  @Get('/lastTransaccion')
+  async lastTransaccion(@Query() query) {
+    return { message: 'Hora y fecha de la ultima transaccion' };
+  }
 }

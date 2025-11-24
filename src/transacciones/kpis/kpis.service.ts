@@ -10,7 +10,7 @@ export class KpisService {
     private readonly apiBinancePagoRepo: Repository<ApiBinancePagos>,
   ) {}
   getKpisPagoMovil = async (query: any = {}) => {
-    const { summarType = 'general', fecha_inicio, fecha_fin } = query;
+    const { summarType = 'general', fecha_inicio, fecha_fin, tipoPago } = query;
     const qb = this.apiBinancePagoRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.punto', 'punto') // mantiene la relación viva
@@ -45,6 +45,7 @@ export class KpisService {
       const fin = new Date(`${fecha_fin}:00Z`);
       qb.andWhere('p.fecha BETWEEN :inicio AND :fin', { inicio, fin });
     }
+    
 
     const [data, total] = await qb.getManyAndCount();
 

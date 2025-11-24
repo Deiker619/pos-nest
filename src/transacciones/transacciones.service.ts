@@ -31,6 +31,7 @@ export class TransaccionesService {
       fecha_inicio,
       fecha_fin,
       busqueda,
+      tipoPago,
       orden,
     } = query;
 
@@ -55,12 +56,14 @@ export class TransaccionesService {
         'p.usuario_receptor',
         'p.ref_bank',
         'p.montofiat',
+        'punto.empAsig',
         'p.comision_binancepay',
         'p.fecha',
         'punto.nombreComercial',
         'punto.banco',
         'punto.telefono',
         'punto.monedaRecibir',
+        'punto.modelo'
       ])
       .where('p.descripcion LIKE :desc', { desc: 'PUNTO DE VENTA%' })
       .andWhere('punto.monedaRecibir = :moneda', { moneda: 'Bs' })
@@ -99,7 +102,13 @@ export class TransaccionesService {
       );
     }
 
+    if (tipoPago && ['Binance Pay pos', 'QRApp'].includes(tipoPago)) {
+      console.log('tipo')
+      qb.andWhere('p.tipo = :tipoPago', { tipoPago });
+    }
+
     const [data, total] = await qb.getManyAndCount();
+     console.log(total);
     return {
       total,
       page: +page,
@@ -150,6 +159,7 @@ export class TransaccionesService {
         'punto.banco',
         'punto.telefono',
         'punto.monedaRecibir',
+        'punto.modelo'
       ])
       .where('p.descripcion LIKE :desc', { desc: 'PUNTO DE VENTA%' })
       .andWhere('punto.monedaRecibir = :moneda', { moneda: 'USDT' })
@@ -189,6 +199,7 @@ export class TransaccionesService {
     }
 
     const [data, total] = await qb.getManyAndCount();
+   
     return {
       total,
       page: +page,
