@@ -193,6 +193,7 @@ export class TransaccionesService {
         p.tipo ILIKE :likeValue OR
         punto.nombre_comercial ILIKE :likeValue OR
         punto.banco ILIKE :likeValue
+        punto.modelo ILIKE :likeValue
       )`,
         { likeValue },
       );
