@@ -13,6 +13,7 @@ import { KpisService } from './kpis/kpis.service';
     TypeOrmModule.forFeature([ApiBinancePagos]),
     TypeOrmModule.forFeature([CrixtoPuntoHomologacion]),
     TypeOrmModule.forFeature([PosConfiguration]),
+    TypeOrmModule.forFeature([ApiPosLogger]),
   ],
   controllers: [TransaccionesController],
   providers: [TransaccionesService, KpisService],
