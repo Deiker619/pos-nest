@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TransaccionesModule } from './transacciones/transacciones.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { LogPosModule } from './log-pos/log-pos.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ConfigModule } from '@nestjs/config';
       synchronize: false, 
       logging: false,
     }),
+    LogPosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
