@@ -10,7 +10,14 @@ export class KpisService {
     private readonly apiBinancePagoRepo: Repository<ApiBinancePagos>,
   ) {}
   getKpisPagoMovil = async (query: any = {}) => {
-    const { summarType = 'general', fecha_inicio, fecha_fin, tipoPago } = query;
+    const {
+      summarType = 'general',
+      fecha_inicio,
+      fecha_fin,
+      tipoPago,
+      page = 1,
+      limit = 50,
+    } = query;
     const qb = this.apiBinancePagoRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.punto', 'punto') // mantiene la relación viva
@@ -48,10 +55,16 @@ export class KpisService {
 
     const [data, total] = await qb.getManyAndCount();
 
-    return this.getSummary(summarType, data);
+    return this.getSummary(summarType, data, page, limit);
   };
   getKpisPagoDiferido = async (query: any = {}) => {
-    const { summarType = 'general', fecha_inicio, fecha_fin } = query;
+    const {
+      summarType = 'general',
+      fecha_inicio,
+      fecha_fin,
+      page = 1,
+      limit = 50,
+    } = query;
     const qb = this.apiBinancePagoRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.punto', 'punto') // mantiene la relación viva
@@ -89,19 +102,21 @@ export class KpisService {
 
     const [data, total] = await qb.getManyAndCount();
 
-    return this.getSummary(summarType, data);
+    return this.getSummary(summarType, data, page, limit);
   };
 
   getSummary = async (
     type: 'serial' | 'nombre' | 'general' = 'general',
     data: any[],
+    page: number = 1,
+    limit: number = 50,
   ) => {
     switch (type) {
       case 'serial':
-        return this.getSummaryBySerial(data);
+        return this.getSummaryBySerial(data, page, limit);
 
       case 'nombre':
-        return this.getSummaryByNombreComercial(data);
+        return this.getSummaryByNombreComercial(data, page, limit);
 
       case 'general':
         return this.getSummaryGeneral(data);
@@ -111,7 +126,7 @@ export class KpisService {
     }
   };
 
-  getSummaryBySerial = (data: any[]) => {
+  getSummaryBySerial = (data: any[], page: number = 1, limit: number = 50) => {
     console.log('serial');
     const accumulated = data.reduce((acc, item) => {
       const serialPunto = item?.serial || 'Sin Serial';
@@ -119,10 +134,12 @@ export class KpisService {
 
       if (!acc[serialPunto]) {
         acc[serialPunto] = {
+          serial: serialPunto,
           totalTransacciones: 0,
           totalMonto: 0,
           totalMontoRecibido: 0,
           totalFiat: 0,
+          nombreComercio: nombrePunto,
           _nombresComerciales: new Set<string>(),
         };
       }
@@ -137,20 +154,34 @@ export class KpisService {
     }, {});
 
     // Post-procesar para convertir Set a array y agregar cantidad
-    const result = {};
+    const resultArray: any[] = [];
     for (const [key, value] of Object.entries(accumulated)) {
       const { _nombresComerciales, ...rest } = value as any;
-      result[key] = {
+      resultArray.push({
         ...rest,
         cantidadNombresComerciales: _nombresComerciales.size,
         nombresComerciales: Array.from(_nombresComerciales),
-      };
+      });
     }
 
-    return result;
+    // Aplicar paginación
+    const total = resultArray.length;
+    const skip = (page - 1) * limit;
+    const paginatedData = resultArray.slice(skip, skip + limit);
+
+    return {
+      total,
+      page: +page,
+      limit: +limit,
+      data: paginatedData,
+    };
   };
 
-  getSummaryByNombreComercial = (data: any[]) => {
+  getSummaryByNombreComercial = (
+    data: any[],
+    page: number = 1,
+    limit: number = 50,
+  ) => {
     const accumulated = data.reduce((acc, item) => {
       const nombrePunto = item.punto?.nombreComercial || 'Sin nombre';
       const serialPunto = item?.serial || 'Sin Serial';
@@ -176,17 +207,27 @@ export class KpisService {
     }, {});
 
     // Post-procesar para convertir Set a array y agregar cantidad
-    const result = {};
+    const resultArray: any[] = [];
     for (const [key, value] of Object.entries(accumulated)) {
       const { _seriales, ...rest } = value as any;
-      result[key] = {
+      resultArray.push({
         ...rest,
         cantidadPuntos: _seriales.size,
         puntos: Array.from(_seriales),
-      };
+      });
     }
 
-    return result;
+    // Aplicar paginación
+    const total = resultArray.length;
+    const skip = (page - 1) * limit;
+    const paginatedData = resultArray.slice(skip, skip + limit);
+
+    return {
+      total,
+      page: +page,
+      limit: +limit,
+      data: paginatedData,
+    };
   };
 
   getSummaryGeneral = (data: any[]) => {
