@@ -45,7 +45,6 @@ export class KpisService {
       const fin = new Date(`${fecha_fin}:00Z`);
       qb.andWhere('p.fecha BETWEEN :inicio AND :fin', { inicio, fin });
     }
-    
 
     const [data, total] = await qb.getManyAndCount();
 
@@ -114,17 +113,17 @@ export class KpisService {
 
   getSummaryBySerial = (data: any[]) => {
     console.log('serial');
-    return data.reduce((acc, item) => {
+    const accumulated = data.reduce((acc, item) => {
       const serialPunto = item?.serial || 'Sin Serial';
       const nombrePunto = item.punto?.nombreComercial || 'Sin nombre';
 
       if (!acc[serialPunto]) {
         acc[serialPunto] = {
-          nombreComercio: nombrePunto,
           totalTransacciones: 0,
           totalMonto: 0,
           totalMontoRecibido: 0,
           totalFiat: 0,
+          _nombresComerciales: new Set<string>(),
         };
       }
 
@@ -132,14 +131,29 @@ export class KpisService {
       acc[serialPunto].totalMonto += Number(item.monto_pago) || 0;
       acc[serialPunto].totalMontoRecibido += Number(item.monto_recibido) || 0;
       acc[serialPunto].totalFiat += Number(item.montofiat) || 0;
+      acc[serialPunto]._nombresComerciales.add(nombrePunto);
 
       return acc;
     }, {});
+
+    // Post-procesar para convertir Set a array y agregar cantidad
+    const result = {};
+    for (const [key, value] of Object.entries(accumulated)) {
+      const { _nombresComerciales, ...rest } = value as any;
+      result[key] = {
+        ...rest,
+        cantidadNombresComerciales: _nombresComerciales.size,
+        nombresComerciales: Array.from(_nombresComerciales),
+      };
+    }
+
+    return result;
   };
 
   getSummaryByNombreComercial = (data: any[]) => {
-    return data.reduce((acc, item) => {
+    const accumulated = data.reduce((acc, item) => {
       const nombrePunto = item.punto?.nombreComercial || 'Sin nombre';
+      const serialPunto = item?.serial || 'Sin Serial';
 
       if (!acc[nombrePunto]) {
         acc[nombrePunto] = {
@@ -148,6 +162,7 @@ export class KpisService {
           totalMonto: 0,
           totalMontoRecibido: 0,
           totalFiat: 0,
+          _seriales: new Set<string>(),
         };
       }
 
@@ -155,9 +170,23 @@ export class KpisService {
       acc[nombrePunto].totalMonto += Number(item.monto_pago) || 0;
       acc[nombrePunto].totalMontoRecibido += Number(item.monto_recibido) || 0;
       acc[nombrePunto].totalFiat += Number(item.montofiat) || 0;
+      acc[nombrePunto]._seriales.add(serialPunto);
 
       return acc;
     }, {});
+
+    // Post-procesar para convertir Set a array y agregar cantidad
+    const result = {};
+    for (const [key, value] of Object.entries(accumulated)) {
+      const { _seriales, ...rest } = value as any;
+      result[key] = {
+        ...rest,
+        cantidadPuntos: _seriales.size,
+        puntos: Array.from(_seriales),
+      };
+    }
+
+    return result;
   };
 
   getSummaryGeneral = (data: any[]) => {
