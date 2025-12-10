@@ -66,10 +66,10 @@ export class LogPosService {
       qb.andWhere(
         `(
         CAST(log.id AS TEXT) ILIKE :likeValue OR
-        log.serial ILIKE :likeValue OR
-        log.tipo ILIKE :likeValue OR
-        log.solicitud ILIKE :likeValue OR
-        log.respuesta ILIKE :likeValue
+        CAST(log.serial AS TEXT) ILIKE :likeValue OR
+        CAST(log.tipo AS TEXT) ILIKE :likeValue OR
+        CAST(log.solicitud AS TEXT) ILIKE :likeValue OR
+        CAST(log.respuesta AS TEXT) ILIKE :likeValue
       )`,
         { likeValue },
       );
@@ -100,42 +100,5 @@ export class LogPosService {
       limit: +limit,
       data,
     };
-  }
-
-  /**
-   * Obtiene un log por ID
-   */
-  async findOne(id: number) {
-    return await this.apiPosLoggerRepository.findOne({
-      where: { id },
-    });
-  }
-
-  /**
-   * Crea un nuevo log
-   */
-  async create(createLogPoDto: CreateLogPoDto) {
-    const newLog = this.apiPosLoggerRepository.create(createLogPoDto);
-    return await this.apiPosLoggerRepository.save(newLog);
-  }
-
-  /**
-   * Actualiza un log existente
-   */
-  async update(id: number, updateLogPoDto: UpdateLogPoDto) {
-    await this.apiPosLoggerRepository.update(id, updateLogPoDto);
-    return await this.findOne(id);
-  }
-
-  /**
-   * Elimina un log
-   */
-  async remove(id: number) {
-    const log = await this.findOne(id);
-    if (!log) {
-      throw new Error(`Log con ID ${id} no encontrado`);
-    }
-    await this.apiPosLoggerRepository.delete(id);
-    return { message: `Log con ID ${id} eliminado exitosamente` };
   }
 }

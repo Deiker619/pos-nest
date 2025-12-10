@@ -63,7 +63,8 @@ export class TransaccionesService {
         'punto.banco',
         'punto.telefono',
         'punto.monedaRecibir',
-        'punto.modelo'
+        'punto.modelo',
+        'punto.serialFisico',
       ])
       .where('p.descripcion LIKE :desc', { desc: 'PUNTO DE VENTA%' })
       .andWhere('punto.monedaRecibir = :moneda', { moneda: 'Bs' })
@@ -88,27 +89,30 @@ export class TransaccionesService {
       const likeValue = `%${busqueda.trim()}%`;
       qb.andWhere(
         `(
-        CAST(p.id AS TEXT) ILIKE :likeValue OR
-        p.txnid ILIKE :likeValue OR
-        p.serial ILIKE :likeValue OR
-        p.descripcion ILIKE :likeValue OR
-        p.usuario_receptor ILIKE :likeValue OR
-        p.ref_bank ILIKE :likeValue OR
-        p.tipo ILIKE :likeValue OR
-        punto.nombre_comercial ILIKE :likeValue OR
-        punto.banco ILIKE :likeValue
-      )`,
+          CAST(p.id AS TEXT) ILIKE :likeValue OR
+          CAST(p.txnid AS TEXT) ILIKE :likeValue OR
+          CAST(p.serial AS TEXT) ILIKE :likeValue OR
+          CAST(p.descripcion AS TEXT) ILIKE :likeValue OR
+          CAST(p.usuario_receptor AS TEXT) ILIKE :likeValue OR
+          CAST(p.ref_bank AS TEXT) ILIKE :likeValue OR
+          CAST(p.tipo AS TEXT) ILIKE :likeValue OR
+          CAST(punto.nombre_comercial AS TEXT) ILIKE :likeValue OR
+          CAST(punto.banco AS TEXT) ILIKE :likeValue OR
+          CAST(punto.modelo AS TEXT) ILIKE :likeValue OR
+          CAST(punto.empAsig AS TEXT) ILIKE :likeValue OR
+          CAST(punto.serialFisico AS TEXT) ILIKE :likeValue
+        )`,
         { likeValue },
       );
     }
 
     if (tipoPago && ['Binance Pay pos', 'QRApp'].includes(tipoPago)) {
-      console.log('tipo')
+      console.log('tipo');
       qb.andWhere('p.tipo = :tipoPago', { tipoPago });
     }
 
     const [data, total] = await qb.getManyAndCount();
-     console.log(total);
+    console.log(total);
     return {
       total,
       page: +page,
@@ -123,12 +127,14 @@ export class TransaccionesService {
    */
   async getTransaccionesDiferidas(query: any = {}) {
     console.log(query);
+
     const {
       limit = 50,
       page = 1,
       fecha_inicio,
       fecha_fin,
       busqueda,
+      tipoPago,
       orden,
     } = query;
 
@@ -159,7 +165,9 @@ export class TransaccionesService {
         'punto.banco',
         'punto.telefono',
         'punto.monedaRecibir',
-        'punto.modelo'
+        'punto.modelo',
+        'punto.serialFisico',
+        'punto.empAsig',
       ])
       .where('p.descripcion LIKE :desc', { desc: 'PUNTO DE VENTA%' })
       .andWhere('punto.monedaRecibir = :moneda', { moneda: 'USDT' })
@@ -185,22 +193,27 @@ export class TransaccionesService {
       qb.andWhere(
         `(
         CAST(p.id AS TEXT) ILIKE :likeValue OR
-        p.txnid ILIKE :likeValue OR
-        p.serial ILIKE :likeValue OR
-        p.descripcion ILIKE :likeValue OR
-        p.usuario_receptor ILIKE :likeValue OR
-        p.ref_bank ILIKE :likeValue OR
-        p.tipo ILIKE :likeValue OR
-        punto.nombre_comercial ILIKE :likeValue OR
-        punto.banco ILIKE :likeValue
-        punto.modelo ILIKE :likeValue
+        CAST(p.txnid AS TEXT) ILIKE :likeValue OR
+        CAST(p.serial AS TEXT) ILIKE :likeValue OR
+        CAST(p.descripcion AS TEXT) ILIKE :likeValue OR
+        CAST(p.usuario_receptor AS TEXT) ILIKE :likeValue OR
+        CAST(p.ref_bank AS TEXT) ILIKE :likeValue OR
+        CAST(p.tipo AS TEXT) ILIKE :likeValue OR
+        CAST(punto.nombre_comercial AS TEXT) ILIKE :likeValue OR
+        CAST(punto.banco AS TEXT) ILIKE :likeValue OR
+        CAST(punto.modelo AS TEXT) ILIKE :likeValue OR
+        CAST(punto.serialFisico AS TEXT) ILIKE :likeValue OR
+        CAST(punto.empAsig AS TEXT) ILIKE :likeValue
       )`,
         { likeValue },
       );
     }
-
+    if (tipoPago && ['Binance Pay pos', 'QRApp'].includes(tipoPago)) {
+      console.log('tipo');
+      qb.andWhere('p.tipo = :tipoPago', { tipoPago });
+    }
     const [data, total] = await qb.getManyAndCount();
-   
+
     return {
       total,
       page: +page,

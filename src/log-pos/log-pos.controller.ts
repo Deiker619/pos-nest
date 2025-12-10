@@ -33,35 +33,4 @@ export class LogPosController {
     return this.logPosService.findAll(query);
   }
 
-  /**
-   * Obtiene un log por ID
-   */
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.logPosService.findOne(+id);
-  }
-
-  /**
-   * Crea un nuevo log
-   */
-  @Post()
-  create(@Body() createLogPoDto: CreateLogPoDto) {
-    return this.logPosService.create(createLogPoDto);
-  }
-
-  /**
-   * Actualiza un log existente
-   */
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLogPoDto: UpdateLogPoDto) {
-    return this.logPosService.update(+id, updateLogPoDto);
-  }
-
-  /**
-   * Elimina un log
-   */
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.logPosService.remove(+id);
-  }
 }
